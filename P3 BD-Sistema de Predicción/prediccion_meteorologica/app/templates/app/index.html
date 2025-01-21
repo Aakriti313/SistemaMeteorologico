@@ -2,180 +2,644 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Predicción Meteorológica</title>
-  <style>
-    /* Eliminar margenes y rellenos básicos del navegador */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;       /* Para alinear el sidebar y el contenido lado a lado */
-      height: 100vh;       /* Ocupa toda la pantalla */
-      background: #f3f4f5; /* Color de fondo global */
-    }
-
-    /* SIDEBAR */
-    .sidebar {
-      width: 220px;              /* Ajusta el ancho del menú lateral */
-      background-color: #2c3e50; /* Un color azul oscuro */
-      color: #ecf0f1;            /* Texto claro */
-      display: flex;
-      flex-direction: column;    /* Logo arriba, links debajo */
-      align-items: center;       /* Centrado horizontal de los elementos dentro */
-    }
-
-    .sidebar .logo {
-      margin: 20px 0;            /* Separación arriba y abajo del logo */
-    }
-
-    .sidebar .logo img {
-      max-width: 100px;          /* Ajusta el tamaño máximo del logo */
-    }
-
-    .nav-menu {
-      list-style: none;          /* Quitamos viñetas */
-      width: 100%;               /* Ocupa todo el ancho del sidebar */
-      padding: 0;
-      margin: 0;
-    }
-
-    .nav-menu li {
-      width: 100%;
-    }
-
-    .nav-menu li a {
-      display: block;
-      padding: 10px 20px;
-      color: inherit;            /* Mantiene el color de la sidebar */
-      text-decoration: none;     /* Sin subrayado */
-      transition: background-color 0.2s;
-    }
-
-    .nav-menu li a:hover {
-      background-color: #34495e; /* Color un poco más claro al pasar el mouse */
-    }
-
-    /* CONTENIDO PRINCIPAL */
-    .main-content {
-      flex: 1;                   /* Ocupará todo el espacio restante a la derecha */
-      padding: 20px;
-      overflow-y: auto;          /* Permite scroll si el contenido es grande */
-    }
-
-    .main-content h1 {
-      margin-bottom: 1rem;
-    }
-
-  </style>
+  <meta charset="UTF-8">
+  <title>PREMETEO SL</title>
+  <!-- Incluye Tailwind CSS desde CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tu hoja de estilos personalizada -->
+  <link rel="stylesheet" href="{% static 'app/style.css' %}">
 </head>
-<body>
-  <!-- MENÚ LATERAL -->
-  <div class="sidebar">
-    <div class="logo">
-      <!-- Ajusta la ruta al logo según tu estructura de archivos -->
-      <img src="{% static 'app/logo1.png' %}" alt="Logo">
-    </div>
-    <ul class="nav-menu">
-      <li><a href="#">Predicciones</a></li>
-      <li><a href="#">Gráficas</a></li>
-      <li><a href="#">Consultar Datos</a></li>
-    </ul>
+<body class="bg-gray-100 font-sans">
+
+  <!-- Overlay para lluvia (oculto inicialmente) -->
+  <div id="rain-overlay" class="hidden"></div>
+
+  <!-- Overlay para tormenta (oculto inicialmente) -->
+  <div id="storm-overlay" class="hidden thunder">
+    <canvas id="canvas1"></canvas>
+    <canvas id="canvas2"></canvas>
+    <canvas id="canvas3"></canvas>
   </div>
 
-  <!-- CONTENIDO PRINCIPAL -->
-  <div class="main-content">
-
-    <div class="main-content">
-      <h1>Predicción Meteorológica</h1>
-      <p>Ingresa los valores para predecir el estado del clima:</p><br>
-    
-      <form id="prediction-form">
-        {% csrf_token %}
-        <label for="solar_radiation">Radiación Solar:</label>
-        <input type="number" id="solar_radiation" name="solar_radiation" step="0.1" required><br><br>
-    
-        <label for="wind">Viento:</label>
-        <input type="number" id="wind" name="wind" step="0.1" required><br><br>
-
-        <label for="visibility">Visibilidad:</label>
-        <input type="number" id="visibility" name="visibility" step="0.1" required><br><br>
-    
-        <label for="temp_max">Temperatura Máxima:</label>
-        <input type="number" id="temp_max" name="temp_max" step="0.1" required><br><br>
-
-        <label for="season_description">Estación:</label>
-        <select id="season_description" name="season_description">
-          <option value="1">Invierno</option>
-          <option value="2">Spring</option>
-          <option value="3">Verano</option>
-          <option value="4">Autumn</option>
-        </select><br><br>
-
-        <label for="precipitation">Precipitación:</label>
-        <input type="number" id="precipitation" name="precipitation" step="0.1" required><br><br>
-
-        <label for="humidity">Humedad:</label>
-        <input type="number" id="humidity" name="humidity" step="0.1" required><br><br>
-
-        <label for="cloudiness_description">Tipo de cielo:</label>
-        <select id="cloudiness_description" name="cloudiness_description">
-          <option value="1">Parcialmente nublado</option>
-          <option value="2">Cubierto</option>
-          <option value="3">Despejado</option>
-        </select><br><br>
-    
-        <button type="button" onclick="makePrediction()">Predecir</button>
-      </form>
-    
-      <div id="result" style="margin-top: 20px;"></div>
+  <!-- Overlay para nubes (Cloudy) oculto inicialmente -->
+  <div id="cloudy-overlay" class="hidden mountain" onmousemove="moveClouds()">
+    <div id="cloud1" class="cloud">
+      <img src="http://img13.deviantart.net/b5ed/i/2013/033/d/0/cloud_fog_by_moonglowlilly-d5tk3l7.png" alt="Cloud 1">
     </div>
-    
-    <script>
-      function getCSRFToken() {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-          const cookie = cookies[i].trim();
-          if (cookie.startsWith('csrftoken=')) {
-            return cookie.substring('csrftoken='.length, cookie.length);
-          }
+    <div id="cloud2" class="cloud">
+      <img src="http://img13.deviantart.net/b5ed/i/2013/033/d/0/cloud_fog_by_moonglowlilly-d5tk3l7.png" alt="Cloud 2">
+    </div>
+    <div id="cloud3" class="cloud">
+      <img src="http://pngimg.com/uploads/cloud/cloud_PNG16.png" alt="Cloud 3">
+    </div>
+    <div id="cloud4" class="cloud">
+      <img src="http://pngimg.com/uploads/cloud/cloud_PNG16.png" alt="Cloud 4">
+    </div>
+  </div>
+    <!-- Overlay para niebla (Fog) oculto inicialmente -->
+  <div id="fog-overlay" class="hidden fogwrapper">
+    <div id="foglayer_01" class="fog">
+      <div class="image01"></div>
+      <div class="image02"></div>
+    </div>
+    <div id="foglayer_02" class="fog">
+      <div class="image01"></div>
+      <div class="image02"></div>
+    </div>
+    <div id="foglayer_03" class="fog">
+      <div class="image01"></div>
+      <div class="image02"></div>
+    </div>
+  </div>
+
+
+  <!-- CONTENEDOR PRINCIPAL: SIDEBAR + CONTENIDO -->
+  <div class="flex min-h-screen">
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-gray-800 text-white flex flex-col items-center py-6">
+      <!-- LOGO -->
+      <div class="mb-6">
+        <img src="{% static 'app/logo1.png' %}" alt="Logo" class="h-auto w-24">
+      </div>
+      <!-- MENÚ DE NAVEGACIÓN -->
+      <nav class="w-full">
+        <ul class="space-y-2">
+          <li>
+            <a href="#" class="block px-4 py-2 rounded transition-colors hover:bg-gray-700">
+              Predicciones
+            </a>
+          </li>
+          <li>
+            <a href="#" class="block px-4 py-2 rounded transition-colors hover:bg-gray-700">
+              Gráficas
+            </a>
+          </li>
+          <li>
+            <a href="#" class="block px-4 py-2 rounded transition-colors hover:bg-gray-700">
+              Consultar Datos
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-1 p-6 overflow-y-auto bg-gray-400">
+      <h1 class="text-2xl font-bold text-gray-800 mb-2">Predicción Meteorológica</h1>
+      <p class="text-gray-600 mb-4">Ingresa los valores para predecir el estado del clima:</p>
+
+      <div class="md:flex gap-6">
+        <!-- FORMULARIO -->
+        <form id="prediction-form" class="md:w-1/2 bg-gray-200 p-6 rounded shadow max-w-lg">
+          {% csrf_token %}
+
+          <!-- Radiación Solar -->
+          <div class="mb-4">
+            <label for="solar_radiation" class="block text-gray-700 font-semibold mb-1">
+              Radiación Solar:
+            </label>
+            <input 
+              type="number" 
+              id="solar_radiation" 
+              name="solar_radiation" 
+              step="0.1" 
+              required
+              class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+            >
+          </div>
+
+          <!-- Viento -->
+          <div class="mb-4">
+            <label for="wind" class="block text-gray-700 font-semibold mb-1">
+              Viento:
+            </label>
+            <input 
+              type="number" 
+              id="wind" 
+              name="wind" 
+              step="0.1" 
+              required
+              class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+            >
+          </div>
+
+          <!-- Visibilidad -->
+          <div class="mb-4">
+            <label for="visibility" class="block text-gray-700 font-semibold mb-1">
+              Visibilidad:
+            </label>
+            <input 
+              type="number" 
+              id="visibility" 
+              name="visibility" 
+              step="0.1" 
+              required
+              class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+            >
+          </div>
+
+          <!-- Temperatura Máxima -->
+          <div class="mb-4">
+            <label for="temp_max" class="block text-gray-700 font-semibold mb-1">
+              Temperatura Máxima:
+            </label>
+            <input 
+              type="number" 
+              id="temp_max" 
+              name="temp_max" 
+              step="0.1" 
+              required
+              class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+            >
+          </div>
+
+          <!-- Estación -->
+          <div class="mb-4">
+            <label for="season_description" class="block text-gray-700 font-semibold mb-1">
+              Estación:
+            </label>
+            <select 
+              id="season_description" 
+              name="season_description"
+              class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+            >
+              <option value="1">Invierno</option>
+              <option value="2">Spring</option>
+              <option value="3">Verano</option>
+              <option value="4">Autumn</option>
+            </select>
+          </div>
+
+          <!-- Precipitación -->
+          <div class="mb-4">
+            <label for="precipitation" class="block text-gray-700 font-semibold mb-1">
+              Precipitación:
+            </label>
+            <input 
+              type="number" 
+              id="precipitation" 
+              name="precipitation" 
+              step="0.1" 
+              required
+              class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+            >
+          </div>
+
+          <!-- Humedad -->
+          <div class="mb-4">
+            <label for="humidity" class="block text-gray-700 font-semibold mb-1">
+              Humedad:
+            </label>
+            <input 
+              type="number" 
+              id="humidity" 
+              name="humidity" 
+              step="0.1" 
+              required
+              class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+            >
+          </div>
+
+          <!-- Tipo de cielo -->
+          <div class="mb-4">
+            <label for="cloudiness_description" class="block text-gray-700 font-semibold mb-1">
+              Tipo de cielo:
+            </label>
+            <select 
+              id="cloudiness_description" 
+              name="cloudiness_description"
+              class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+            >
+              <option value="1">Parcialmente nublado</option>
+              <option value="2">Cubierto</option>
+              <option value="3">Despejado</option>
+            </select>
+          </div>
+
+          <!-- Botón Predecir -->
+          <button 
+            type="button" 
+            onclick="makePrediction()"
+            class="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition-colors"
+          >
+            Predecir
+          </button>
+        </form>
+
+        <!-- RESULTADO A LA DERECHA -->
+        <div id="result" class="md:w-1/2 flex items-center justify-center"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- SCRIPT PRINCIPAL -->
+  <script>
+    function getCSRFToken() {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.startsWith('csrftoken=')) {
+          return cookie.substring('csrftoken='.length, cookie.length);
         }
-        return null;
       }
-      
-      async function makePrediction() {
-        const form = document.getElementById('prediction-form');
-        const formData = new FormData(form);
-      
-        const csrfToken = getCSRFToken();
-      
-        const response = await fetch('/predict/', {
-          method: 'POST',
-          body: formData,
-          headers: {
-            'X-CSRFToken': csrfToken,  // Agrega el token CSRF aquí
-          },
-        });
-      
-        const resultDiv = document.getElementById('result');
-        try {
-          const result = await response.json();
-          if (result.error) {
-            resultDiv.innerHTML = `<p>Error: ${result.error}</p>`;
+      return null;
+    }
+
+    async function makePrediction() {
+      const form = document.getElementById('prediction-form');
+      const formData = new FormData(form);
+
+      const csrfToken = getCSRFToken();
+      const response = await fetch('/predict/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRFToken': csrfToken,
+        },
+      });
+
+      const resultDiv = document.getElementById('result');
+      const rainOverlay = document.getElementById('rain-overlay');
+      const stormOverlay = document.getElementById('storm-overlay');
+      const cloudyOverlay = document.getElementById('cloudy-overlay');
+
+      try {
+        const result = await response.json();
+        if (result.error) {
+          // Mostrar error
+          resultDiv.innerHTML = `<p class="text-red-500">Error: ${result.error}</p>`;
+          // Ocultar lluvia si estaba activa
+          rainOverlay.innerHTML = '';
+          rainOverlay.classList.add('hidden');
+          // Ocultar tormenta si estaba activa
+          stormOverlay.classList.add('hidden');
+          // Ocultar nubes si estaba activo
+          cloudyOverlay.classList.add('hidden');
+        } else {
+          // Mostrar la predicción en texto simple
+          resultDiv.innerHTML = `<p class="">Predicción del clima: <b>${result.prediction}</b></p>`;
+
+          // Ocultar todo antes de activar lo que corresponda
+          rainOverlay.classList.add('hidden'); 
+          rainOverlay.innerHTML = '';
+          stormOverlay.classList.add('hidden');
+          cloudyOverlay.classList.add('hidden');
+
+          // ----------------------------------
+          // 1) Lluvia
+          // ----------------------------------
+          if (result.prediction === "1") {
+            rainOverlay.classList.remove('hidden');
+            rainOverlay.innerHTML = '<div class="rain w-full h-full"></div>';
+
+            // Después de 5 segundos, eliminar la lluvia
+            setTimeout(() => {
+              rainOverlay.innerHTML = '';
+              rainOverlay.classList.add('hidden');
+            }, 5000);
+
+          // ----------------------------------
+          // 2) Sol
+          // ----------------------------------
+          } else if (result.prediction === "2") {
+            resultDiv.innerHTML = `
+              <style>
+                .sun-container {
+                  width: 250px;
+                  height: 250px;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  border-radius: 8px;
+                  margin-top: 1rem;
+                }
+                .sun-circle {
+                  width: 200px;
+                  height: 200px;
+                  background: #ffdd50;
+                  border-radius: 50%;
+                  animation: shine 1.5s ease-in-out infinite;
+                }
+                @keyframes shine {
+                  50% {
+                    box-shadow:
+                      0 0 20px #ffdd50,
+                      0 0 60px #ffdd50,
+                      0 0 250px #ffdd50;
+                  }
+                }
+              </style>
+              <div class="sun-container">
+                <div class="sun-circle"></div>
+              </div>
+            `;
+
+          // ----------------------------------
+          // 3) Tormenta (STORM)
+          // ----------------------------------
+          } else if (result.prediction === "3") {
+            stormOverlay.classList.remove('hidden');
+            // (Re)inicia la animación de tormenta
+            initStorm();
+            animloopStorm();
+            // Después de 5s, ocultar la tormenta
+            setTimeout(() => {
+              stormOverlay.classList.add('hidden');
+            }, 5000);
+
+          // ----------------------------------
+          // 4) Nublado (CLOUDY)
+          // ----------------------------------
+          } else if (result.prediction === "4") {
+            // Muestra el overlay de nubes
+            cloudyOverlay.classList.remove('hidden');
+
+            setTimeout(() => {
+              cloudyOverlay.classList.add('hidden');
+            }, 5000);
+          // ----------------------------------
+          // 5) Otras condiciones (Fog, etc.)
+          // ----------------------------------
+          } else if (result.prediction === "Rain") {
+            // Muestra el overlay de la niebla
+            document.getElementById('fog-overlay').classList.remove('hidden');
+          
+            // Opcional: que se oculte tras 5 segundos
+            setTimeout(() => {
+              document.getElementById('fog-overlay').classList.add('hidden');
+            }, 5000);
           } else {
-            resultDiv.innerHTML = `<p>Predicción del clima: ${result.prediction}</p>`;
+            // Para Fog u otras, podrías añadir más overlays o animaciones
+            // o simplemente mostrar el texto
+            console.log("Predicción no implementada con animación específica:", result.prediction);
           }
-        } catch (e) {
-          resultDiv.innerHTML = `<p>Error inesperado: ${e.message}</p>`;
         }
+      } catch (e) {
+        resultDiv.innerHTML = `<p class="text-red-500">Error inesperado: ${e.message}</p>`;
+        rainOverlay.classList.add('hidden');
+        rainOverlay.innerHTML = '';
+        stormOverlay.classList.add('hidden');
+        cloudyOverlay.classList.add('hidden');
       }
-      
-    </script>
-    
-  </div>
+    }
+  </script>
+
+  <!-- SCRIPT DE LAS NUBES (Cloudy) -->
+  <script>
+    function moveClouds() {
+      for(let i = 1; i <= 4; i++) {
+        let cloud = document.getElementById("cloud" + i);
+        cloud.style.transitionTimingFunction = "ease-out";
+        cloud.style.transitionDuration = "700ms";
+
+        // TOP
+        let top = window.getComputedStyle(cloud, null).getPropertyValue("top");
+        let topValue = parseInt(top);
+        topValue = topValue - 20; // desplaza las nubes hacia arriba
+        cloud.style.top = topValue + "px";
+
+        // LEFT
+        let left = window.getComputedStyle(cloud, null).getPropertyValue("left");
+        let leftValue = parseInt(left);
+
+        if(i < 3) {
+          // Las dos primeras nubes se mueven a la izquierda
+          leftValue = leftValue - 30;
+        } else {
+          // Las dos últimas nubes se mueven a la derecha
+          leftValue = leftValue + 30;
+        }
+        cloud.style.left = leftValue + "px";
+      }
+    }
+  </script>
+
+  <!-- SCRIPT DE LA TORMENTA (STORM) -->
+  <script>
+    // Variables globales para la tormenta
+    let canvas1, canvas2, canvas3;
+    let ctx1, ctx2, ctx3;
+    let w, h;
+    let rainthroughnum = 500;
+    let speedRainTrough = 25;
+    let RainTrough = [];
+    let rainnum = 500;
+    let rain = [];
+    let lightning = [];
+    let lightTimeCurrent = 0;
+    let lightTimeTotal = 0;
+
+    // Funciones de ayuda
+    function random(min, max) {
+      return Math.random() * (max - min + 1) + min;
+    }
+
+    // Limpiar canvas
+    function clearcanvas1() {
+      ctx1.clearRect(0, 0, w, h);
+    }
+    function clearcanvas2() {
+      ctx2.clearRect(0, 0, w, h);
+    }
+    function clearCanvas3() {
+      ctx3.globalCompositeOperation = 'destination-out';
+      ctx3.fillStyle = 'rgba(0,0,0,' + random(1, 30) / 100 + ')';
+      ctx3.fillRect(0, 0, w, h);
+      ctx3.globalCompositeOperation = 'source-over';
+    }
+
+    // Crear lluvia "trough"
+    function createRainTrough() {
+      RainTrough = [];
+      for (let i = 0; i < rainthroughnum; i++) {
+        RainTrough.push({
+          x: random(0, w),
+          y: random(0, h),
+          length: Math.floor(random(1, 830)),
+          opacity: Math.random() * 0.2,
+          xs: random(-2, 2),
+          ys: random(10, 20)
+        });
+      }
+    }
+
+    // Crear gotas de lluvia
+    function createRain() {
+      rain = [];
+      for (let i = 0; i < rainnum; i++) {
+        rain.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          l: Math.random() * 1,
+          xs: -4 + Math.random() * 4 + 2,
+          ys: Math.random() * 10 + 10
+        });
+      }
+    }
+
+    // Crear relámpagos
+    function createLightning() {
+      let x = random(100, w - 100);
+      let y = random(0, h / 4);
+      // Aumenta o ajusta la frecuencia/cantidad
+      let createCount = random(2, 5);
+
+      for (let i = 0; i < createCount; i++) {
+        let single = {
+          x: x,
+          y: y,
+          xRange: random(5, 30),
+          yRange: random(10, 25),
+          path: [{ x: x, y: y }],
+          pathLimit: random(40, 55)
+        };
+        lightning.push(single);
+      }
+    }
+
+    // Dibujar gotas largas "trough"
+    function drawRainTrough(i) {
+      ctx1.beginPath();
+      let grd = ctx1.createLinearGradient(
+        0, 
+        RainTrough[i].y, 
+        0, 
+        RainTrough[i].y + RainTrough[i].length
+      );
+      grd.addColorStop(0, "rgba(255,255,255,0)");
+      grd.addColorStop(1, "rgba(255,255,255," + RainTrough[i].opacity + ")");
+      ctx1.fillStyle = grd;
+      ctx1.fillRect(RainTrough[i].x, RainTrough[i].y, 1, RainTrough[i].length);
+      ctx1.fill();
+    }
+
+    // Dibujar gotas de lluvia
+    function drawRain(i) {
+      ctx2.beginPath();
+      ctx2.moveTo(rain[i].x, rain[i].y);
+      ctx2.lineTo(rain[i].x + rain[i].l * rain[i].xs, rain[i].y + rain[i].l * rain[i].ys);
+      ctx2.strokeStyle = 'rgba(174,194,224,0.5)';
+      ctx2.lineWidth = 1;
+      ctx2.lineCap = 'round';
+      ctx2.stroke();
+    }
+
+    // Dibujar relámpagos
+    function drawLightning() {
+      for (let i = 0; i < lightning.length; i++) {
+        let light = lightning[i];
+        light.path.push({
+          x: light.path[light.path.length - 1].x + (random(0, light.xRange) - (light.xRange / 2)),
+          y: light.path[light.path.length - 1].y + (random(0, light.yRange))
+        });
+
+        if (light.path.length > light.pathLimit) {
+          lightning.splice(i, 1);
+        }
+
+        ctx3.strokeStyle = 'rgba(255, 255, 255, .1)';
+        ctx3.lineWidth = 3;
+        if (random(0, 15) === 0) {
+          ctx3.lineWidth = 6;
+        }
+        if (random(0, 30) === 0) {
+          ctx3.lineWidth = 8;
+        }
+
+        ctx3.beginPath();
+        ctx3.moveTo(light.x, light.y);
+        for (let pc = 0; pc < light.path.length; pc++) {
+          ctx3.lineTo(light.path[pc].x, light.path[pc].y);
+        }
+        if (Math.floor(random(0, 30)) === 1) {
+          ctx3.fillStyle = 'rgba(255, 255, 255, ' + random(1, 3) / 100 + ')';
+          ctx3.fillRect(0, 0, w, h);
+        }
+        ctx3.lineJoin = 'miter';
+        ctx3.stroke();
+      }
+    }
+
+    // Animar la lluvia trough
+    function animateRainTrough() {
+      clearcanvas1();
+      for (let i = 0; i < rainthroughnum; i++) {
+        if (RainTrough[i].y >= h) {
+          RainTrough[i].y = h - RainTrough[i].y - RainTrough[i].length * 5;
+        } else {
+          RainTrough[i].y += speedRainTrough;
+        }
+        drawRainTrough(i);
+      }
+    }
+
+    // Animar la lluvia normal
+    function animateRain() {
+      clearcanvas2();
+      for (let i = 0; i < rainnum; i++) {
+        rain[i].x += rain[i].xs;
+        rain[i].y += rain[i].ys;
+        if (rain[i].x > w || rain[i].y > h) {
+          rain[i].x = Math.random() * w;
+          rain[i].y = -20;
+        }
+        drawRain(i);
+      }
+    }
+
+    // Animar los relámpagos
+    function animateLightning() {
+      clearCanvas3();
+      lightTimeCurrent++;
+      if (lightTimeCurrent >= lightTimeTotal) {
+        createLightning();
+        lightTimeCurrent = 0;
+        lightTimeTotal = random(50, 100);
+      }
+      drawLightning();
+    }
+
+    // Inicializar tormenta
+    function initStorm() {
+      // Obtenemos referencias a los canvas
+      canvas1 = document.getElementById('canvas1');
+      canvas2 = document.getElementById('canvas2');
+      canvas3 = document.getElementById('canvas3');
+
+      if (!canvas1 || !canvas2 || !canvas3) return;
+
+      ctx1 = canvas1.getContext('2d');
+      ctx2 = canvas2.getContext('2d');
+      ctx3 = canvas3.getContext('2d');
+
+      // Ajusta w y h
+      w = canvas1.width = canvas2.width = canvas3.width = window.innerWidth;
+      h = canvas1.height = canvas2.height = canvas3.height = window.innerHeight;
+
+      // Cuando cambie tamaño de ventana
+      window.addEventListener('resize', () => {
+        w = canvas1.width = canvas2.width = canvas3.width = window.innerWidth;
+        h = canvas1.height = canvas2.height = canvas3.height = window.innerHeight;
+        // Regenerar lluvia
+        createRainTrough();
+        createRain();
+      });
+
+      // Crear gotas iniciales
+      createRainTrough();
+      createRain();
+      lightning = [];
+      lightTimeCurrent = 0;
+      lightTimeTotal = 0;
+    }
+
+    // Bucle de animación
+    function animloopStorm() {
+      animateRainTrough();
+      animateRain();
+      animateLightning();
+      requestAnimationFrame(animloopStorm);
+    }
+  </script>
 </body>
 </html>
