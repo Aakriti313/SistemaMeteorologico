@@ -2,6 +2,7 @@ from django.db import connection
 from django.shortcuts import render
 from django.http import JsonResponse
 import joblib
+import pandas as pd
 
 # Ruta del modelo
 MODEL_PATH = 'app/ml_models/svm_model1M3.pkl'
@@ -19,14 +20,25 @@ WEATHER_MAPPING = {
 }
 
 def landing_view(request):
-    return render(request, 'app/index.html')
+    return render(request, 'app/index.html', {'active_page': 'index'})
 
 def consultas_view(request):
-    return render(request, 'app/consultas.html')
+    return render(request, 'app/consultas.html', {'active_page': 'consultas'})
+
 
 def predict_weather(request):
     if request.method == 'POST':
         try:
+            feature_names = [
+                'temp_max',
+                'cloudiness_id',
+                'precipitation',
+                'wind',
+                'visibility',
+                'humidity',
+                'season_id',
+                'solar_radiation',
+            ]
             # Obtén los datos enviados por el usuario
             data = request.POST
             precipitation = float(data.get('precipitation', 0))
@@ -38,21 +50,26 @@ def predict_weather(request):
             cloudiness_id = int(data.get('cloudiness_description'))
             season_id = int(data.get('season_description'))
 
+            X = pd.DataFrame([[
+                temp_max, cloudiness_id, precipitation, wind,
+                visibility, humidity, season_id, solar_radiation,
+            ]], columns=feature_names)
 
-            # Construye el array de entrada
-            input_data = [[
-                solar_radiation, wind, visibility, temp_max, season_id, precipitation, humidity, cloudiness_id
-            ]]
-            print(input_data)
+            # # Construye el array de entrada
+            # input_data = [[
+            #     solar_radiation, wind, visibility, temp_max, season_id, precipitation, humidity, cloudiness_id
+            # ]]
+            print("input:", X.head())
+            print("Feature: ",modelo.feature_names_in_)
             # Realiza la predicción
-            prediction = modelo.predict(input_data)[0]  # Obtén la predicción
+            prediction = modelo.predict(X)[0]  # Obtén la predicción
 
             # Obtén la descripción asociada a la predicción
             prediction_text = WEATHER_MAPPING.get(int(prediction), "Unknown")
 
             # Devuelve la descripción en lugar del número
             print(prediction_text, prediction)
-            print(modelo.predict(input_data))
+            # print("Modelo: ",modelo.predict(input_data))
             return JsonResponse({'prediction': prediction_text})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
