@@ -1,0 +1,280 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Consulta de Observaciones</title>
+  <style>
+    /* Eliminar margenes y rellenos básicos del navegador */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;       /* Para alinear el sidebar y el contenido lado a lado */
+      height: 100vh;       /* Ocupa toda la pantalla */
+      background: #e0e5ec; /* Color de fondo suave para neumorfismo */
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 220px;              /* Ajusta el ancho del menú lateral */
+      background-color: #2c3e50; /* Un color azul oscuro */
+      color: #ecf0f1;            /* Texto claro */
+      display: flex;
+      flex-direction: column;    /* Logo arriba, links debajo */
+      align-items: center;       /* Centrado horizontal de los elementos dentro */
+      padding-top: 20px;
+    }
+
+    .sidebar .logo {
+      margin-bottom: 20px;       /* Separación arriba y abajo del logo */
+    }
+
+    .sidebar .logo img {
+      max-width: 100px;          /* Ajusta el tamaño máximo del logo */
+    }
+
+    .nav-menu {
+      list-style: none;          /* Quitamos viñetas */
+      width: 100%;               /* Ocupa todo el ancho del sidebar */
+      padding: 0;
+      margin: 0;
+    }
+
+    .nav-menu li {
+      width: 100%;
+    }
+
+    .nav-menu li a {
+      display: block;
+      padding: 10px 20px;
+      color: inherit;            /* Mantiene el color de la sidebar */
+      text-decoration: none;     /* Sin subrayado */
+      transition: background-color 0.2s;
+      margin: 10px 0;
+    }
+
+    .nav-menu li a:hover {
+      background-color: #34495e;
+    }
+
+    /* CONTENIDO PRINCIPAL */
+    .main-content {
+      flex: 1;                   /* Ocupará todo el espacio restante a la derecha */
+      padding: 20px;
+      overflow-y: auto;          /* Permite scroll si el contenido es grande */
+    }
+
+    .main-content h1 {
+      margin-bottom: 1rem;
+      font-size: 24px;
+    }
+
+    /* Estilos de neumorfismo para los filtros */
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: bold;
+    }
+
+    select {
+      background-color: #e0e5ec;
+      padding: 10px;
+      border: none;
+      border-radius: 12px;
+      box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.1), -8px -8px 20px rgba(255, 255, 255, 0.9);
+      width: 200px;
+      margin-bottom: 15px;
+    }
+
+    select:focus {
+      outline: none;
+      box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.2), -8px -8px 20px rgba(255, 255, 255, 0.8);
+    }
+
+    button {
+      background-color: #98c7d6;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.1), -5px -5px 10px rgba(255, 255, 255, 0.3);
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #82b2bf;
+      box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.2), -5px -5px 20px rgba(255, 255, 255, 0.3);
+    }
+
+    /* Estilos para la tabla */
+    #results-table {
+      background-color: #e0e5ec;
+      width: 100%;
+      border-radius: 12px;
+      box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.1), -8px -8px 20px rgba(255, 255, 255, 0.9);
+      overflow: hidden;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: center;
+      font-size: 14px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #34495e;
+      color: #fff;
+    }
+
+    td {
+      background-color: #f4f6f9;
+    }
+
+    tr:hover td {
+      background-color: #dbe2e8;
+    }
+
+  </style>
+</head>
+<body>
+  <!-- MENÚ LATERAL -->
+  <div class="sidebar">
+    <div class="logo">
+      <img src="{% static 'app/logo1.png' %}" alt="Logo">
+    </div>
+    <ul class="nav-menu">
+      <li><a href="/">Predicciones</a></li>
+      <li><a href="consultas/">Consultar Datos</a></li>
+    </ul>
+  </div>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <div class="main-content">
+
+    <h1>Consulta de Observaciones</h1>
+
+    <!-- Selector de Filtros -->
+
+    <div>
+      <select id="weather_filter" style="margin-right: 10px;">
+        <option value="" disabled selected>Condición climática</option>
+        <option value="">Todos</option>
+        <option value="sun">Soleado</option>
+        <option value="rain">Lluvia</option>
+        <option value="fog">Niebla</option>
+        <option value="cloudy">Nublado</option>
+      </select>
+    
+      <select id="season_filter" style="margin-right: 10px;">
+        <option value="" disabled selected>Estación</option>
+        <option value="">Todas</option>
+        <option value="Autumn">Otoño</option>
+        <option value="Winter">Invierno</option>
+        <option value="Spring">Primavera</option>
+        <option value="Summer">Verano</option>
+      </select>
+    
+      <select id="cloudiness_filter">
+        <option value="" disabled selected>Cielo</option>
+        <option value="">Todos</option>
+        <option value="clear">Clear</option>
+        <option value="covered">Covered</option>
+        <option value="partlycloudy">Partly cloudy</option>
+      </select>
+      <br>
+
+      <button onclick="applyFilters()">Aplicar Filtros</button>
+    </div>
+
+    <!-- Tabla -->
+    <div id="result">
+      <table id="results-table">
+        <thead>
+          <tr>
+            <th>observation_id</th>
+            <th>observation_date</th>
+            <th>precipitation</th>
+            <th>temp_max</th>
+            <th>temp_min</th>
+            <th>wind</th>
+            <th>humidity</th>
+            <th>pressure</th>
+            <th>solar_radiation</th>
+            <th>visibility</th>
+            <th>weather_name</th>
+            <th>cloudiness_name</th>
+            <th>season_name</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script>
+    async function fetchResults(filters = {}) {
+      const url = new URL('/mi_vista/', window.location.href);
+      Object.keys(filters).forEach(key => {
+        if (filters[key]) {
+          url.searchParams.append(key, filters[key]);
+        }
+      });
+
+      const response = await fetch(url);
+      const tableBody = document.querySelector('#results-table tbody');
+
+      try {
+        const result = await response.json();
+        tableBody.innerHTML = ''; // Limpia resultados anteriores
+
+        const data = result.resultados.slice(0, 20); // Limita a los primeros 20 resultados
+
+        if (data.length > 0) {
+          data.forEach((fila) => {
+            const row = document.createElement('tr');
+            for (const key in fila) {
+              const cell = document.createElement('td');
+              cell.textContent = fila[key];
+              row.appendChild(cell);
+            }
+            tableBody.appendChild(row);
+          });
+        } else {
+          tableBody.innerHTML = '<tr><td colspan="13">No se encontraron datos.</td></tr>';
+        }
+      } catch (error) {
+        console.error('Error al procesar los datos:', error);
+      }
+    }
+
+    // Aplica los filtros seleccionados
+    function applyFilters() {
+      const weatherFilter = document.getElementById('weather_filter').value;
+      const seasonFilter = document.getElementById('season_filter').value;
+      const cloudinessFilter = document.getElementById('cloudiness_filter').value;
+
+      const filters = {
+        weather: weatherFilter,
+        season: seasonFilter,
+        cloudiness: cloudinessFilter
+      };
+
+      fetchResults(filters);
+    }
+
+    // Ejecuta la consulta al cargar la página
+    document.addEventListener('DOMContentLoaded', () => fetchResults({}));
+  </script>
+</body>
+</html>

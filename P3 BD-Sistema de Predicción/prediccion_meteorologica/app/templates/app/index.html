@@ -9,8 +9,32 @@
   <!-- Tu hoja de estilos personalizada -->
   <link rel="stylesheet" href="{% static 'app/style.css' %}">
 </head>
-<body class="bg-gray-100 font-sans">
 
+<style>
+  /* Estilos de Neomorfismo */
+  .input-neomorph {
+      background: #e0e5ec;
+      border-radius: 12px;
+      padding: 10px;
+      box-shadow: 7px 7px 15px rgba(0, 0, 0, 0.1), -7px -7px 15px rgba(255, 255, 255, 0.7);
+      border: none;
+      width: 100%;
+      margin-top: 5px;
+      margin-bottom: 10px;
+    }
+
+    select.input-neomorph {
+      background: #e0e5ec;
+      border-radius: 12px;
+      padding: 10px;
+      box-shadow: 7px 7px 15px rgba(0, 0, 0, 0.1), -7px -7px 15px rgba(255, 255, 255, 0.7);
+      border: none;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+</style>
+
+<body>
   <!-- Overlay para lluvia (oculto inicialmente) -->
   <div id="rain-overlay" class="hidden"></div>
 
@@ -56,26 +80,21 @@
   <!-- CONTENEDOR PRINCIPAL: SIDEBAR + CONTENIDO -->
   <div class="flex min-h-screen">
     <!-- SIDEBAR -->
-    <aside class="w-64 bg-gray-800 text-white flex flex-col items-center py-6">
+    <aside style="width: 220px; background-color: #2c3e50; color: #ecf0f1; display: flex; flex-direction: column; align-items: center;">
       <!-- LOGO -->
-      <div class="mb-6">
-        <img src="{% static 'app/logo1.png' %}" alt="Logo" class="h-auto w-24">
+      <div class="mb-6" style="margin: 20px 0;">
+        <img src="{% static 'app/logo1.png' %}" alt="Logo" style="max-width: 100px;">
       </div>
       <!-- MENÚ DE NAVEGACIÓN -->
-      <nav class="w-full">
-        <ul class="space-y-2">
-          <li>
-            <a href="#" class="block px-4 py-2 rounded transition-colors hover:bg-gray-700">
+      <nav  style="list-style: none; width: 100%; padding: 0; margin: 0;">
+        <ul>
+          <li style="width: 100%;">
+            <a href="/" style="display: block; padding: 10px 20px; color: inherit; text-decoration: none; transition: background-color 0.2s;">
               Predicciones
             </a>
           </li>
-          <li>
-            <a href="#" class="block px-4 py-2 rounded transition-colors hover:bg-gray-700">
-              Gráficas
-            </a>
-          </li>
-          <li>
-            <a href="#" class="block px-4 py-2 rounded transition-colors hover:bg-gray-700">
+          <li style="width: 100%;">
+            <a href="consultas/" style="display: block; padding: 10px 20px; color: inherit; text-decoration: none; transition: background-color 0.2s;">
               Consultar Datos
             </a>
           </li>
@@ -84,13 +103,13 @@
     </aside>
 
     <!-- CONTENIDO PRINCIPAL -->
-    <main class="flex-1 p-6 overflow-y-auto bg-gray-400">
-      <h1 class="text-2xl font-bold text-gray-800 mb-2">Predicción Meteorológica</h1>
-      <p class="text-gray-600 mb-4">Ingresa los valores para predecir el estado del clima:</p>
+    <main class="flex-1 p-6 overflow-y-auto" style="background: #e0e5ec;">
+      <h1 class="text-3xl font-bold text-gray-800 mb-2" style="margin-bottom: 1rem;">Predicción Meteorológica</h1>
+      <p class="mb-4" style="color: rgba(0, 0, 0, 0.596);">Ingresa los valores para predecir el estado del clima:</p>
 
       <div class="md:flex gap-6">
         <!-- FORMULARIO -->
-        <form id="prediction-form" class="md:w-1/2 bg-gray-200 p-6 rounded shadow max-w-lg">
+        <form id="prediction-form" class="md:w-1/2  max-w-lg">
           {% csrf_token %}
 
           <!-- Radiación Solar -->
@@ -104,7 +123,7 @@
               name="solar_radiation" 
               step="0.1" 
               required
-              class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+              class="input-neomorph"
             >
           </div>
 
@@ -119,7 +138,7 @@
               name="wind" 
               step="0.1" 
               required
-              class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+              class="input-neomorph"
             >
           </div>
 
@@ -134,7 +153,7 @@
               name="visibility" 
               step="0.1" 
               required
-              class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+              class="input-neomorph"
             >
           </div>
 
@@ -149,7 +168,7 @@
               name="temp_max" 
               step="0.1" 
               required
-              class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+              class="input-neomorph"
             >
           </div>
 
@@ -161,7 +180,7 @@
             <select 
               id="season_description" 
               name="season_description"
-              class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+              class="input-neomorph"
             >
               <option value="1">Invierno</option>
               <option value="2">Spring</option>
@@ -181,7 +200,7 @@
               name="precipitation" 
               step="0.1" 
               required
-              class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+              class="input-neomorph"
             >
           </div>
 
@@ -196,7 +215,7 @@
               name="humidity" 
               step="0.1" 
               required
-              class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+              class="input-neomorph"
             >
           </div>
 
@@ -208,7 +227,7 @@
             <select 
               id="cloudiness_description" 
               name="cloudiness_description"
-              class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
+              class="input-neomorph"
             >
               <option value="1">Parcialmente nublado</option>
               <option value="2">Cubierto</option>
@@ -217,13 +236,7 @@
           </div>
 
           <!-- Botón Predecir -->
-          <button 
-            type="button" 
-            onclick="makePrediction()"
-            class="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition-colors"
-          >
-            Predecir
-          </button>
+          <button type="button" onclick="makePrediction()" style="background: #98c7d6; padding: 12px 24px; border-radius: 12px; border: none; box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.1), -4px -4px 8px rgba(255, 255, 255, 0.7); cursor: pointer; font-size: 16px; color: #fff; transition: background-color 0.2s;">Predecir</button>
         </form>
 
         <!-- RESULTADO A LA DERECHA -->
@@ -288,7 +301,7 @@
           // ----------------------------------
           // 1) Lluvia
           // ----------------------------------
-          if (result.prediction === "1") {
+          if (result.prediction === "Rain") {
             rainOverlay.classList.remove('hidden');
             rainOverlay.innerHTML = '<div class="rain w-full h-full"></div>';
 
@@ -301,7 +314,7 @@
           // ----------------------------------
           // 2) Sol
           // ----------------------------------
-          } else if (result.prediction === "2") {
+          } else if (result.prediction === "Sun") {
             resultDiv.innerHTML = `
               <style>
                 .sun-container {
@@ -337,7 +350,7 @@
           // ----------------------------------
           // 3) Tormenta (STORM)
           // ----------------------------------
-          } else if (result.prediction === "3") {
+          } else if (result.prediction === "Storm") {
             stormOverlay.classList.remove('hidden');
             // (Re)inicia la animación de tormenta
             initStorm();
@@ -350,7 +363,7 @@
           // ----------------------------------
           // 4) Nublado (CLOUDY)
           // ----------------------------------
-          } else if (result.prediction === "4") {
+          } else if (result.prediction === "Cloudy") {
             // Muestra el overlay de nubes
             cloudyOverlay.classList.remove('hidden');
 
@@ -360,7 +373,7 @@
           // ----------------------------------
           // 5) Otras condiciones (Fog, etc.)
           // ----------------------------------
-          } else if (result.prediction === "Rain") {
+          } else if (result.prediction === "Fog") {
             // Muestra el overlay de la niebla
             document.getElementById('fog-overlay').classList.remove('hidden');
           

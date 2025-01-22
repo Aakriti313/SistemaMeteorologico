@@ -1,3 +1,4 @@
+from django.db import connection
 from django.shortcuts import render
 from django.http import JsonResponse
 import joblib
@@ -19,6 +20,9 @@ WEATHER_MAPPING = {
 
 def landing_view(request):
     return render(request, 'app/index.html')
+
+def consultas_view(request):
+    return render(request, 'app/consultas.html')
 
 def predict_weather(request):
     if request.method == 'POST':
@@ -52,4 +56,50 @@ def predict_weather(request):
             return JsonResponse({'prediction': prediction_text})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+def mi_vista(request):
+    if request.method == 'GET':  # Cambiado a GET para solicitudes automáticas
+        try:
+            consulta = "SELECT * FROM v_observations"
+            parametros = []
+            filtros = []
+
+            # Obtener los filtros desde los parámetros GET
+            weather_filter = request.GET.get('weather')
+            if weather_filter:
+                filtros.append("weather_name LIKE %s")
+                parametros.append(f"%{weather_filter}%")
+
+            season_filter = request.GET.get('season')
+            if season_filter:
+                filtros.append("season_name = %s")
+                parametros.append(season_filter)
+
+            cloudiness_filter = request.GET.get('cloudiness')
+            if cloudiness_filter:
+                filtros.append("cloudiness_name = %s")
+                parametros.append(cloudiness_filter)
+
+            # Agregar cláusula WHERE si hay filtros
+            if filtros:
+                consulta += " WHERE " + " AND ".join(filtros)
+
+            # Limitar los resultados a los primeros 20
+            consulta += " LIMIT 20"
+
+            # Ejecutar la consulta
+            with connection.cursor() as cursor:
+                cursor.execute(consulta, parametros)
+                resultados = cursor.fetchall()
+
+                # Serialización básica de los resultados
+                columnas = [col[0] for col in cursor.description]  # Nombres de columnas
+                resultados_serializados = [dict(zip(columnas, fila)) for fila in resultados]
+
+            return JsonResponse({'resultados': resultados_serializados})
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
     return JsonResponse({'error': 'Invalid request method'}, status=405)

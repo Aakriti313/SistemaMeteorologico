@@ -7,9 +7,9 @@
     /* Fondo global, puedes cambiar la imagen a tu gusto */
     background: url(bg.jpg) no-repeat center center;
     background-size: cover;
-    font-family: sans-serif;
+    font-family: Arial, sans-serif;
   }
-  
+
   /* ==============================
      ELEMENTOS/UTILIDADES GENERALES
      ============================== */

@@ -76,8 +76,12 @@ WSGI_APPLICATION = 'prediccion_meteorologica.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'meteorologic_prediction',
+        'USER': 'root',
+        'PASSWORD': '',
+        'HOST': 'localhost',  # o dirección de tu servidor
+        'PORT': '3306',       # puerto por defecto para MySQL
     }
 }
 
