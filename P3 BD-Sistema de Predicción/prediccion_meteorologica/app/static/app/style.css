@@ -1,0 +1,257 @@
+/* ==============================
+   RESET BÁSICO
+   ============================== */
+   body {
+    margin: 0;
+    padding: 0;
+    /* Fondo global, puedes cambiar la imagen a tu gusto */
+    background: url(bg.jpg) no-repeat center center;
+    background-size: cover;
+    font-family: Arial, sans-serif;
+  }
+
+  /* ==============================
+     ELEMENTOS/UTILIDADES GENERALES
+     ============================== */
+  
+  /* Para ocultar overlays cuando no se usan */
+  .hidden {
+    display: none;
+  }
+  
+  /* ==============================
+     OVERLAY DE LLUVIA (RAIN)
+     ============================== */
+  
+  #rain-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999; /* Por encima del contenido */
+  }
+  
+  .rain {
+    width: 100%;
+    height: 100%;
+    background: url(rain.png) repeat;
+    animation: rain 0.3s linear infinite;
+  }
+  
+  @keyframes rain {
+    0% {
+      background-position: 0% 0%;
+    }
+    100% {
+      background-position: 20% 100%;
+    }
+  }
+  
+  /* ==============================
+     OVERLAY DE TORMENTA (STORM)
+     ============================== */
+  
+  #storm-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    overflow: hidden; /* Para evitar scroll */
+  }
+  
+  /* Fondo de tormenta animado */
+  .thunder {
+    background-color: #222;
+    /* Ajusta la imagen a tu gusto */
+    background-image: url('https://drive.google.com/uc?export=view&id=0BzFF7FmbJUo5X0NEUXFVd0NBcWc');
+    background-size: cover;
+    background-position: 0 0;
+    background-repeat: no-repeat;
+    animation: thunder-bg 6s infinite;
+    position: relative;
+  }
+  
+  @keyframes thunder-bg {
+    0%, 9%, 80%, 100% {
+      background-color: rgba(34, 34, 34, 0.9);
+    }
+    10%, 83.5% {
+      background-color: rgba(59, 59, 59, 0.3);
+    }
+  }
+  
+  /* Tres capas de canvas (lluvia, relámpagos, etc.) */
+  #storm-overlay canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+  
+  #canvas3 {
+    z-index: 5;
+  }
+  #canvas2 {
+    z-index: 10;
+  }
+  #canvas1 {
+    z-index: 100;
+  }
+  
+  /* ==============================
+     OVERLAY DE NUBES (CLOUDY)
+     ============================== */
+  
+  .mountain {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    /* Imagen de fondo para "montañas" o ajusta a tu gusto */
+    background-size: cover;
+    overflow: hidden;
+  }
+  
+  /* Cada "cloud" es un contenedor de la imagen */
+  .cloud {
+    opacity: 0.9;
+    width: 200%;        /* Aumenta ancho para que se vean grandes */
+    max-width: 1500px;  /* Ajusta según la resolución deseada */
+    height: auto;
+    position: absolute;
+  }
+  
+  /* Ejemplo de ubicación inicial de las nubes */
+  #cloud1 {
+    top: 10%;
+    left: 5%;
+  }
+  #cloud2 {
+    top: 25%;
+    left: 35%;
+  }
+  #cloud3 {
+    top: 50%;
+    left: 15%;
+  }
+  #cloud4 {
+    top: 70%;
+    left: 60%;
+  }
+  
+  /* ==============================
+     OVERLAY DE NIEBLA (FOG)
+     ============================== */
+  
+  /* Contenedor general para la niebla */
+  .fogwrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    overflow-x: hidden;
+  
+    /* Efecto visual: blur, grayscale, saturación, sepia, etc. */
+    filter: blur(1px) grayscale(0.2) saturate(1.2) sepia(0.2);
+
+  }
+  
+  /* Tres capas de niebla, cada una de ancho 200% para animarse */
+  #foglayer_01, #foglayer_02, #foglayer_03 {
+    height: 100%;
+    position: absolute;
+    width: 200%;
+    left: 0;
+  }
+  
+  /* Cada capa tendrá 2 imágenes flotando al 50% del contenedor */
+  #foglayer_01 .image01, #foglayer_01 .image02,
+  #foglayer_02 .image01, #foglayer_02 .image02,
+  #foglayer_03 .image01, #foglayer_03 .image02 {
+    float: left;
+    width: 50%;
+    height: 100%;
+  }
+  
+  /* Animación horizontal */
+  @keyframes foglayer_moveme {
+    0% {
+      left: 0;
+    }
+    100% {
+      left: -100%;
+    }
+  }
+  
+  /* Opcional: Animaciones de opacidad para cada capa */
+  @keyframes foglayer_01_opacity {
+    0%   { opacity: 0.5; }
+    22%  { opacity: 1;   }
+    40%  { opacity: 0.8; }
+    58%  { opacity: 0.9; }
+    80%  { opacity: 0.6; }
+    100% { opacity: 0.5; }
+  }
+  
+  @keyframes foglayer_02_opacity {
+    0%   { opacity: 0.9; }
+    25%  { opacity: 0.6; }
+    50%  { opacity: 0.5; }
+    80%  { opacity: 0.7; }
+    100% { opacity: 0.9; }
+  }
+  @keyframes foglayer_03_opacity {
+    0%   { opacity: 1;   }
+    27%  { opacity: 0.6; }
+    52%  { opacity: 0.9; }
+    68%  { opacity: 0.7; }
+    100% { opacity: 1;   }
+  }
+  
+  
+  /* Asignar las animaciones a cada capa */
+  #foglayer_01 {
+    animation:
+      foglayer_01_opacity 10s linear infinite,
+      foglayer_moveme 15s linear infinite;
+  }
+  #foglayer_02 {
+    animation:
+      foglayer_02_opacity 21s linear infinite,
+      foglayer_moveme 13s linear infinite;
+  }
+  #foglayer_03 {
+    animation:
+      foglayer_03_opacity 21s linear infinite,
+      foglayer_moveme 13s linear infinite;
+  }
+  
+  /* Imágenes de niebla (puedes cambiarlas por las tuyas) */
+  #foglayer_01 .image01, #foglayer_01 .image02 {
+    background: url("https://raw.githubusercontent.com/danielstuart14/CSS_FOG_ANIMATION/master/fog1.png")
+      center center/cover no-repeat transparent;
+  }
+  #foglayer_02 .image01, #foglayer_02 .image02,
+  #foglayer_03 .image01, #foglayer_03 .image02 {
+    background: url("https://raw.githubusercontent.com/danielstuart14/CSS_FOG_ANIMATION/master/fog2.png")
+      center center/cover no-repeat transparent;
+  }
+  
+  /* Ajuste responsivo opcional */
+  @media only screen and (max-width: 767px) {
+    #foglayer_01 .image01, #foglayer_01 .image02,
+    #foglayer_02 .image01, #foglayer_02 .image02,
+    #foglayer_03 .image01, #foglayer_03 .image02 {
+      width: 100%;
+    }
+  }
+  
+  

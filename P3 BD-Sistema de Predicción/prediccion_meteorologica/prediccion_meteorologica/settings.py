@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-n#(*=(cqtldskh36xi70wi&%&gdu-9%u@9x8f&dl2cz9vph0pa
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['premeteo.ia', 'www.premeteo.ia', '127.0.0.1']
 
 
 # Application definition
@@ -76,8 +76,12 @@ WSGI_APPLICATION = 'prediccion_meteorologica.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'weatherdata',
+        'USER': 'root',
+        'PASSWORD': '1234',
+        'HOST': 'localhost',  # o dirección de tu servidor
+        'PORT': '3306',       # puerto por defecto para MySQL
     }
 }
 
